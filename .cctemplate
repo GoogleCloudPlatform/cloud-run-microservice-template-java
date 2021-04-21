@@ -1,0 +1,16 @@
+{
+  "name": "cloud-run-microservice-template-java",
+  "metadata": {
+    "version": "0.1.0"
+  },
+  "templates": [
+    {
+      "path": "./",
+      "name": "Cloud Run Microservice Template - Java",
+      "description": "Basic microservice template for Cloud Run",
+      "languages": [
+        "Java""
+      ]
+    }
+  ]
+}
