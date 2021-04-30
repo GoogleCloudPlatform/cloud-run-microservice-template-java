@@ -51,7 +51,7 @@ limitations under the License.
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-gcp-starter-logging</artifactId>
-      <version>1.2.7.RELEASE</version>
+      <version>1.2.8.RELEASE</version>
     </dependency>
     <!-- Provides access the metadata server -->
     <dependency>
