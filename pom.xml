@@ -57,7 +57,7 @@ limitations under the License.
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-core</artifactId>
-      <version>1.95.0</version>
+      <version>1.95.2</version>
     </dependency>
 
     <!-- Optionally include development tools -->
