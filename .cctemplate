@@ -9,7 +9,7 @@
       "name": "Cloud Run Microservice Template - Java",
       "description": "Basic microservice template for Cloud Run",
       "languages": [
-        "Java""
+        "Java"
       ]
     }
   ]
