@@ -81,7 +81,7 @@ steps:
     - '-c'
     - |
       gcloud artifacts docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
-      gcloud run services delete ${_SERVICE_NAME}-$(cat _short_id) --region ${_DEPLOY_REGION} --platform ${_PLATFORM} --quiet
+      gcloud run services delete ${_SERVICE_NAME}-$(cat _short_id) --region ${_DEPLOY_REGION} --quiet
 
 substitutions:
   _GCR_HOSTNAME: us-central1-docker.pkg.dev
