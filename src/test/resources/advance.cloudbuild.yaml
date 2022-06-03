@@ -71,7 +71,7 @@ steps:
     - |
       export BASE_URL=$(cat _service_url)
       export ID_TOKEN=$(cat _id_token)
-      mvn failsafe:integration-test
+      mvn failsafe:integration-test failsafe:verify
 
 # Clean up system test resources
 - id: 'Delete image and service'
