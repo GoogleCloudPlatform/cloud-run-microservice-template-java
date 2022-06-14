@@ -25,7 +25,7 @@ steps:
   entrypoint: pack
   args:
     - build
-    - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA' # Tag docker image with git commit SHA
+    - '$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA' # Tag docker image with git commit SHA
     - '--builder=gcr.io/buildpacks/builder:v1'
     - '--path=.'
     
@@ -34,7 +34,7 @@ steps:
   name: 'gcr.io/cloud-builders/docker:latest'
   args:
     - push
-    - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA' 
+    - '$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA' 
 
 - id: 'Deploy to Cloud Run'
   name: 'gcr.io/cloud-builders/gcloud:latest'
@@ -42,11 +42,9 @@ steps:
   args:
     - '-c'
     - |
-      cat /dev/urandom | LC_CTYPE=C tr -dc 'a-z0-9' | head -c 15 > _short_id # Generate a random 15 character alphanumeric string (lowercase only)
-      gcloud run deploy ${_SERVICE_NAME}-$(cat _short_id) \
-        --image $_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA \
+      gcloud run deploy ${_SERVICE_NAME}-$BUILD_ID \
+        --image $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA \
         --region ${_DEPLOY_REGION} \
-        --platform ${_PLATFORM} \
         --no-allow-unauthenticated
 
 - id: 'Retrieve Service URL'
@@ -57,7 +55,8 @@ steps:
     - |
       set -e
       source /workspace/src/test/resources/common.sh
-      echo $(get_url) > _service_url
+      echo $(get_url ${BUILD_ID}) > _service_url
+      echo "Cloud Run URL for ${_SERVICE_NAME}-$BUILD_ID is $(cat _service_url)"
       echo $(get_idtoken) > _id_token
   env:
     - '_SERVICE_NAME=${_SERVICE_NAME}'
@@ -72,7 +71,7 @@ steps:
     - |
       export BASE_URL=$(cat _service_url)
       export ID_TOKEN=$(cat _id_token)
-      mvn failsafe:integration-test
+      mvn failsafe:integration-test failsafe:verify
 
 # Clean up system test resources
 - id: 'Delete image and service'
@@ -81,11 +80,11 @@ steps:
   args:
     - '-c'
     - |
-      gcloud container images delete $_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
-      gcloud run services delete ${_SERVICE_NAME}-$(cat _short_id) --region ${_DEPLOY_REGION} --platform ${_PLATFORM} --quiet
+      gcloud artifacts docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
+      gcloud run services delete ${_SERVICE_NAME}-$BUILD_ID --region ${_DEPLOY_REGION} --quiet
 
 substitutions:
-  _GCR_HOSTNAME: us.gcr.io
+  _GCR_HOSTNAME: us-central1-docker.pkg.dev
   _SERVICE_NAME: microservice-template
   _DEPLOY_REGION: us-central1
-  _PLATFORM: managed
+  _REPOSITORY: samples

@@ -56,21 +56,33 @@ Learn how to use Cloud Code for:
     export GOOGLE_CLOUD_PROJECT=<GCP_PROJECT_ID>
     ```
 
-2. Use the gcloud credential helper to authorize Docker to push to your Container Registry:
+1. Enable the Artifact Registry API:
+    ```bash
+    gcloud services enable artifactregistry.googleapis.com
+    ```
+
+1. Create an Artifact Registry repo:
+    ```bash
+    export REPOSITORY="samples"
+    export REGION=us-central1
+    gcloud artifacts repositories create $REPOSITORY --location $REGION --repository-format "docker"
+    ```
+  
+1. Use the gcloud credential helper to authorize Docker to push to your Artifact Registry:
     ```bash
     gcloud auth configure-docker
     ```
 
-3. Build the container:
+1. Build the container:
     ```bash
-    mvn clean compile jib:build -Dimage=gcr.io/$GOOGLE_CLOUD_PROJECT/microservice-template
+    mvn clean compile jib:build -Dimage=$REGION-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/$REPOSITORY/microservice-template
     ```
 
-4. Deploy to Cloud Run:
+1. Deploy to Cloud Run:
     ```bash
     gcloud run deploy microservice-template \
-      --image gcr.io/$GOOGLE_CLOUD_PROJECT/microservice-template \
-      --platform managed
+      --image $REGION-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/$REPOSITORY/microservice-template \
+      --region $REGION
     ```
 
 ### Run sample tests
@@ -89,16 +101,24 @@ Learn how to use Cloud Code for:
     The Cloud Build configuration file will build and deploy the containerized service
     to Cloud Run, run tests managed by Maven, then clean up testing resources. This configuration restricts public
     access to the test service. Therefore, service accounts need to have the permission to issue Id tokens for request authorization:
-    * Enable Cloud Build and IAM APIs:
+    * Enable Cloud Run, Cloud Build, Artifact Registry, and IAM APIs:
         ```bash
-        gcloud services enable cloudbuild.googleapis.com iamcredentials.googleapis.com
+        gcloud services enable run.googleapis.com cloudbuild.googleapis.com iamcredentials.googleapis.com artifactregistry.googleapis.com
         ```
+
     * Set environment variables.
         ```bash
         export PROJECT_ID="$(gcloud config get-value project)"
         export PROJECT_NUMBER="$(gcloud projects describe $(gcloud config get-value project) --format='value(projectNumber)')"
         ```
 
+    * Create an Artifact Registry repo (or use another already created repo):
+        ```bash
+        export REPOSITORY="samples"
+        export REGION=us-central1
+        gcloud artifacts repositories create $REPOSITORY --location $REGION --repository-format "docker"
+        ```
+  
     * Create service account `token-creator` with `Service Account Token Creator` and `Cloud Run Invoker` roles.
         ```bash
         gcloud iam service-accounts create token-creator
