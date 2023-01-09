@@ -24,7 +24,6 @@ steps:
     entrypoint: pack
     args:
       - build
-      - "--env=GOOGLE_RUNTIME_VERSION=17"
       - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
       - "--builder=gcr.io/buildpacks/builder:v1"
       - "--path=."
