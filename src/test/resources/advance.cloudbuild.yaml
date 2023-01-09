@@ -26,6 +26,7 @@ steps:
       - build
       - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
       - "--builder=gcr.io/buildpacks/builder:v1"
+      - "--env GOOGLE_RUNTIME_VERSION=17"
       - "--path=."
 
   - id: "Push Container Image"
