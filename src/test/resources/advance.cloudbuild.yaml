@@ -10,78 +10,77 @@
 # limitations under the License.
 
 steps:
+  - id: "Lint"
+    name: maven:3-openjdk-17
+    args: ["mvn", "compile", "checkstyle:check"]
 
-- id: 'Lint'
-  name: maven:3-openjdk-11
-  args: ['mvn', 'compile', 'checkstyle:check']
+  - id: "Run Unit Tests"
+    name: maven:3-openjdk-17
+    args: ["mvn", "test"]
 
-- id: 'Run Unit Tests'
-  name: maven:3-openjdk-11
-  args: ['mvn', 'test']
+  # Setup resources for system tests
+  - id: "Build Container Image"
+    name: "gcr.io/k8s-skaffold/pack"
+    entrypoint: pack
+    args:
+      - build
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
+      - "--builder=gcr.io/buildpacks/builder:v1"
+      - "--env=GOOGLE_RUNTIME_VERSION=17"
+      - "--path=."
 
-# Setup resources for system tests
-- id: 'Build Container Image'
-  name: 'gcr.io/k8s-skaffold/pack'
-  entrypoint: pack
-  args:
-    - build
-    - '$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA' # Tag docker image with git commit SHA
-    - '--builder=gcr.io/buildpacks/builder:v1'
-    - '--path=.'
-    
+  - id: "Push Container Image"
+    name: "gcr.io/cloud-builders/docker:latest"
+    args:
+      - push
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
 
-- id: 'Push Container Image'
-  name: 'gcr.io/cloud-builders/docker:latest'
-  args:
-    - push
-    - '$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA' 
+  - id: "Deploy to Cloud Run"
+    name: "gcr.io/cloud-builders/gcloud:latest"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        gcloud run deploy ${_SERVICE_NAME}-$BUILD_ID \
+          --image $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA \
+          --region ${_DEPLOY_REGION} \
+          --no-allow-unauthenticated
 
-- id: 'Deploy to Cloud Run'
-  name: 'gcr.io/cloud-builders/gcloud:latest'
-  entrypoint: /bin/bash
-  args:
-    - '-c'
-    - |
-      gcloud run deploy ${_SERVICE_NAME}-$BUILD_ID \
-        --image $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA \
-        --region ${_DEPLOY_REGION} \
-        --no-allow-unauthenticated
+  - id: "Retrieve Service URL"
+    name: "gcr.io/cloud-builders/gcloud:latest"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        set -e
+        source /workspace/src/test/resources/common.sh
+        echo $(get_url ${BUILD_ID}) > _service_url
+        echo "Cloud Run URL for ${_SERVICE_NAME}-$BUILD_ID is $(cat _service_url)"
+        echo $(get_idtoken) > _id_token
+    env:
+      - "_SERVICE_NAME=${_SERVICE_NAME}"
+      - "_DEPLOY_REGION=${_DEPLOY_REGION}"
+      - "PROJECT_ID=${PROJECT_ID}"
 
-- id: 'Retrieve Service URL'
-  name: 'gcr.io/cloud-builders/gcloud:latest'
-  entrypoint: /bin/bash
-  args:
-    - '-c'
-    - |
-      set -e
-      source /workspace/src/test/resources/common.sh
-      echo $(get_url ${BUILD_ID}) > _service_url
-      echo "Cloud Run URL for ${_SERVICE_NAME}-$BUILD_ID is $(cat _service_url)"
-      echo $(get_idtoken) > _id_token
-  env:
-    - '_SERVICE_NAME=${_SERVICE_NAME}'
-    - '_DEPLOY_REGION=${_DEPLOY_REGION}'
-    - 'PROJECT_ID=${PROJECT_ID}'
-  
-- id: 'Run System Tests'
-  name: maven:3-openjdk-11
-  entrypoint: /bin/bash
-  args:
-    - '-c'
-    - |
-      export BASE_URL=$(cat _service_url)
-      export ID_TOKEN=$(cat _id_token)
-      mvn failsafe:integration-test failsafe:verify
+  - id: "Run System Tests"
+    name: maven:3-openjdk-17
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        export BASE_URL=$(cat _service_url)
+        export ID_TOKEN=$(cat _id_token)
+        mvn failsafe:integration-test failsafe:verify
 
-# Clean up system test resources
-- id: 'Delete image and service'
-  name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: '/bin/bash'
-  args:
-    - '-c'
-    - |
-      gcloud artifacts docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
-      gcloud run services delete ${_SERVICE_NAME}-$BUILD_ID --region ${_DEPLOY_REGION} --quiet
+  # Clean up system test resources
+  - id: "Delete image and service"
+    name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "/bin/bash"
+    args:
+      - "-c"
+      - |
+        gcloud artifacts docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
+        gcloud run services delete ${_SERVICE_NAME}-$BUILD_ID --region ${_DEPLOY_REGION} --quiet
 
 substitutions:
   _GCR_HOSTNAME: us-central1-docker.pkg.dev
