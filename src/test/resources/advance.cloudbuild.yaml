@@ -27,14 +27,15 @@ steps:
       - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
       - "--builder=gcr.io/buildpacks/builder:v1"
       - "--path=."
-      
+      - "-v"
+
   # Additional output for troubleshooting purposes
-  - id: "Output manifest inspect"
-    name: "gcr.io/cloud-builders/docker:latest"
+  - id: "Inspect Image"
+    name: "gcr.io/k8s-skaffold/pack"
+    entrypoint: pack
     args:
-      - manifest
-      - inspect 
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+      - inspect-image
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" 
 
   - id: "Push Container Image"
     name: "gcr.io/cloud-builders/docker:latest"
