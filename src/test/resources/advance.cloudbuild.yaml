@@ -34,6 +34,16 @@ steps:
       - inspect
       - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
 
+  - name: "gcr.io/cloud-builders/docker:latest"
+    args:
+      - inspect
+      - "gcr.io/buildpacks/builder:v1"
+
+  - name: "gcr.io/cloud-builders/docker:latest"
+    args:
+      - inspect
+      - "gcr.io/buildpacks/gcp/run:v1"
+
   - id: "Push Container Image"
     name: "gcr.io/cloud-builders/docker:latest"
     args:
