@@ -39,11 +39,6 @@ steps:
       - inspect
       - "gcr.io/buildpacks/builder:latest"
 
-  - name: "gcr.io/cloud-builders/docker:latest"
-    args:
-      - inspect
-      - "gcr.io/buildpacks/gcp/run:latest"
-
   - id: "Push Container Image"
     name: "gcr.io/cloud-builders/docker:latest"
     args:
