@@ -34,11 +34,11 @@ steps:
     args:
       - "-c"
       - |
-        retry=False
-        while retry; do
+        retry=True
+        while $retry; do
           docker push "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
-          if [ $? -eq 1 ]; then
-            retry=True
+          if [ $? -eq 0 ]; then
+            retry=False
           fi
         done
 
