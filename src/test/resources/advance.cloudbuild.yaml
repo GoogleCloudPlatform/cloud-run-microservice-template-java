@@ -28,22 +28,20 @@ steps:
       - "--builder=gcr.io/buildpacks/builder:latest"
       - "--path=."
 
-  - id: "Debug: Inspect Image"
-    name: "gcr.io/cloud-builders/docker:latest"
-    args:
-      - inspect
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
-
-  - name: "gcr.io/cloud-builders/docker:latest"
-    args:
-      - inspect
-      - "gcr.io/buildpacks/builder:latest"
-
   - id: "Push Container Image"
     name: "gcr.io/cloud-builders/docker:latest"
+    entrypoint: /bin/bash
+    timeout: 60s
     args:
-      - push
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+      - "-c"
+      - |
+        retry=true
+        while $retry; do
+          docker push "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+          if [ $? -eq 0 ]; then
+            retry=false
+          fi
+        done
 
   - id: "Deploy to Cloud Run"
     name: "gcr.io/cloud-builders/gcloud:latest"
