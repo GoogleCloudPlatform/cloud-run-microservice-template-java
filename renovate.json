@@ -1,41 +1,40 @@
 {
     "extends": [
-        "config:base",
+        "config:recommended",
         ":separateMajorReleases",
         ":combinePatchMinorReleases",
         ":ignoreUnstable",
         ":prImmediately",
         ":updateNotScheduled",
-        ":automergeDisabled",
-        ":autodetectPinVersions"
+        ":automergeDisabled"
     ],
     "packageRules": [
         {
-            "packagePatterns": [
-                "*"
-            ],
             "semanticCommitType": "deps",
-            "semanticCommitScope": null
+            "semanticCommitScope": null,
+            "matchPackageNames": [
+                "*"
+            ]
         },
         {
-            "packagePatterns": [
-                "^org.springframework.boot:spring-boot-starter-test",
-                "^com.squareup.okhttp3:okhttp"
-            ],
             "semanticCommitType": "test",
-            "semanticCommitScope": "deps"
+            "semanticCommitScope": "deps",
+            "matchPackageNames": [
+                "/^org.springframework.boot:spring-boot-starter-test/",
+                "/^com.squareup.okhttp3:okhttp/"
+            ]
         },
         {
-            "packagePatterns": [
-                "^com.google.cloud:google-cloud-"
-            ],
-            "ignoreUnstable": false
+            "ignoreUnstable": false,
+            "matchPackageNames": [
+                "/^com.google.cloud:google-cloud-/"
+            ]
         }
     ],
     "labels": [
         "automerge"
     ],
     "rebaseWhen": "never",
-    "masterIssue": true,
-    "semanticCommits": true
+    "dependencyDashboard": true,
+    "semanticCommits": "enabled"
 }
