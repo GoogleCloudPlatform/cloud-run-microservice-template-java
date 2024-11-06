@@ -132,7 +132,7 @@ limitations under the License.
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.18.1</version>
+            <version>10.20.0</version>
           </dependency>
         </dependencies>
         <configuration>
