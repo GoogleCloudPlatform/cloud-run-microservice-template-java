@@ -31,6 +31,8 @@ public class MicroserviceController {
   // https://cloud.spring.io/spring-cloud-gcp/multi/multi__stackdriver_logging.html
   private static final Logger logger = LoggerFactory.getLogger(MicroserviceController.class);
 
+  log.console();
+  
   /** Example endpoint handler. */
   @GetMapping("/")
   public @ResponseBody String index() {
