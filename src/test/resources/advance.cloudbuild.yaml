@@ -11,11 +11,11 @@
 
 steps:
   - id: "Lint"
-    name: maven:3-openjdk-17
+    name: maven:3-openjdk-21
     args: ["mvn", "compile", "checkstyle:check"]
 
   - id: "Run Unit Tests"
-    name: maven:3-openjdk-17
+    name: maven:3-openjdk-21
     args: ["mvn", "test"]
 
   # Setup resources for system tests
@@ -67,7 +67,7 @@ steps:
       - "PROJECT_ID=${PROJECT_ID}"
 
   - id: "Run System Tests"
-    name: maven:3-openjdk-17
+    name: maven:3-openjdk-21
     entrypoint: /bin/bash
     args:
       - "-c"

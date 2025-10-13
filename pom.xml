@@ -20,8 +20,8 @@ limitations under the License.
   <description>Microservice Template</description>
 
   <properties>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
   </properties>
 
   <parent>
@@ -58,7 +58,7 @@ limitations under the License.
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>spring-cloud-gcp-starter</artifactId>
-      <version>5.8.0</version>
+      <version>7.3.0</version>
     </dependency>
 
     <!-- Optionally include development tools -->
