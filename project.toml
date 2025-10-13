@@ -5,4 +5,4 @@
 
 [[build.env]]
   name = "GOOGLE_RUNTIME_VERSION"
-  value = "17"
+  value = "21"
